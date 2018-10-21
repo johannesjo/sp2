@@ -1,8 +1,11 @@
 <section class="mat-typography">
   <div class="task-list"
+       #taskListRef
        cdkDropList
+       [cdkDropListConnectedTo]="[connectedList]"
        (cdkDropListDropped)="drop($event)">
     <task *ngFor="let task of tasks; trackBy: trackByFn; let i = index;"
+          cdkDragLockAxis="y"
           cdkDrag
           [task]="task">
     </task>

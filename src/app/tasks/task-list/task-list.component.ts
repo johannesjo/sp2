@@ -1,6 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { TaskService } from '../task.service';
 import { Task } from '../task.model';
 import shortid from 'shortid';
@@ -15,8 +13,8 @@ import shortid from 'shortid';
 export class TaskListComponent implements OnInit, OnDestroy {
   @Input() tasks: Task[];
   @Input() filterArgs: string;
+  @Input() connectedList: any;
   taskListId: string;
-  private subs: Subscription[] = [];
 
   constructor(private _taskService: TaskService) {
   }
@@ -26,7 +24,19 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subs.forEach((sub) => sub && sub.unsubscribe());
+  }
+
+  drop(ev) {
+    // console.log(ev.previousIndex,
+    //   this.tasks[ev.previousIndex].title,
+    //   ev.currentIndex,
+    //   this.tasks[ev.currentIndex].title);
+
+    this._taskService.move(
+      this.tasks[ev.previousIndex].id,
+      this.tasks[ev.currentIndex].id,
+      ev.previousIndex < ev.currentIndex
+    );
   }
 
   trackByFn(i: number, task: Task) {

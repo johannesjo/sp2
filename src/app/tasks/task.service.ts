@@ -181,12 +181,13 @@ export class TaskService {
     });
   }
 
-  moveAfter(taskId, targetItemId: string | undefined) {
+  move(taskId, targetItemId: string | undefined, isMoveAfter: boolean = false) {
     this._store.dispatch({
-      type: TaskActionTypes.MoveAfter,
+      type: TaskActionTypes.Move,
       payload: {
         taskId,
         targetItemId,
+        isMoveAfter,
       }
     });
   }

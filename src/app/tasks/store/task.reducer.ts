@@ -123,10 +123,15 @@ export function taskReducer(
       return taskAdapter.removeAll(state);
     }
 
-    case TaskActionTypes.MoveAfter: {
+    case TaskActionTypes.Move: {
       const newStateIds: string[] = state.ids.slice(0) as string[];
+      // remove item
       newStateIds.splice(newStateIds.indexOf(action.payload.taskId), 1);
-      const targetIndex = action.payload.targetItemId ? newStateIds.indexOf(action.payload.targetItemId) : 0;
+      let targetIndex = action.payload.targetItemId ? newStateIds.indexOf(action.payload.targetItemId) : 0;
+      if (action.payload.isMoveAfter) {
+        targetIndex += 1;
+      }
+      // move item
       newStateIds.splice(targetIndex, 0, action.payload.taskId);
 
       return Object.assign({}, state, {

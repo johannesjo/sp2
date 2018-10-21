@@ -36,6 +36,7 @@ import { FormlyModule } from '@ngx-formly/core';
 import { ThemeSelectComponent } from './theme-select/theme-select.component';
 import { MsToStringPipe } from './duration/ms-to-string.pipe';
 import { StringToMsPipe } from './duration/string-to-ms.pipe';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
   imports: [
@@ -45,6 +46,9 @@ import { StringToMsPipe } from './duration/string-to-ms.pipe';
     ReactiveFormsModule,
     FormlyModule.forChild(),
     FormlyMaterialModule,
+
+
+    DragDropModule,
 
     // material2
     MatSelectModule,
@@ -90,6 +94,8 @@ import { StringToMsPipe } from './duration/string-to-ms.pipe';
     ThemeSelectComponent,
     MsToStringPipe,
     StringToMsPipe,
+
+    DragDropModule,
 
     // material2
     MatSelectModule,
