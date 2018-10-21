@@ -1,6 +1,9 @@
 <section class="mat-typography">
-  <div class="task-list">
+  <div class="task-list"
+       cdkDropList
+       (cdkDropListDropped)="drop($event)">
     <task *ngFor="let task of tasks; trackBy: trackByFn; let i = index;"
+          cdkDrag
           [task]="task">
     </task>
   </div>

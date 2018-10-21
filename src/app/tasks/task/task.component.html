@@ -138,9 +138,7 @@
                         [task]="task"></task-additional-info>
 
   <div class="sub-tasks"
-       *ngIf="task.subTasks"
-       [dragula]="subTaskListId"
-       [dragulaModel]="task.subTasks">
+       *ngIf="task.subTasks">
     <task *ngFor="let task of task.subTasks; let i = index;"
           [task]="task">
     </task>

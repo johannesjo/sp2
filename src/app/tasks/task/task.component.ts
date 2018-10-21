@@ -2,7 +2,6 @@ import { Component, DoCheck, HostBinding, Input, OnInit } from '@angular/core';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { TaskService } from '../task.service';
 import { Observable } from 'rxjs';
-import { DragulaService } from 'ng2-dragula';
 import { Task } from '../task.model';
 import shortid from 'shortid';
 import { MatDialog } from '@angular/material';
@@ -31,7 +30,6 @@ export class TaskComponent implements OnInit, DoCheck {
 
   constructor(
     private readonly _taskService: TaskService,
-    private readonly _dragulaService: DragulaService,
     private readonly _matDialog: MatDialog
   ) {
   }
@@ -47,11 +45,6 @@ export class TaskComponent implements OnInit, DoCheck {
     });
 
     this.subTaskListId = shortid();
-    this._dragulaService.createGroup(this.subTaskListId, {
-      moves: function (el, container, handle) {
-        return handle.className.indexOf('handle-sub') > -1;
-      }
-    });
   }
 
   deleteTask(taskId: string) {
