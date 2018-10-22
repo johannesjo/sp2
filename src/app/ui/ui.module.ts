@@ -36,7 +36,7 @@ import { FormlyModule } from '@ngx-formly/core';
 import { ThemeSelectComponent } from './theme-select/theme-select.component';
 import { MsToStringPipe } from './duration/ms-to-string.pipe';
 import { StringToMsPipe } from './duration/string-to-ms.pipe';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { DragDropModule } from './drag-drop';
 
 @NgModule({
   imports: [

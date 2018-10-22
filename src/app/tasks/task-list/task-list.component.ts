@@ -27,16 +27,18 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   drop(ev) {
-    // console.log(ev.previousIndex,
-    //   this.tasks[ev.previousIndex].title,
-    //   ev.currentIndex,
-    //   this.tasks[ev.currentIndex].title);
-
-    this._taskService.move(
-      this.tasks[ev.previousIndex].id,
-      this.tasks[ev.currentIndex].id,
-      ev.previousIndex < ev.currentIndex
-    );
+    console.log(ev.previousIndex,
+      this.tasks[ev.previousIndex].title,
+      ev.currentIndex,
+      this.tasks[ev.currentIndex].title);
+    if (ev.previousIndex !== ev.currentIndex) {
+      this._taskService.move(
+        this.tasks[ev.previousIndex].id,
+        this.tasks[ev.currentIndex].id,
+        ev.previousIndex < ev.currentIndex
+      );
+    }
+    // moveItemInArray(this.tasks, ev.previousIndex, ev.currentIndex);
   }
 
   trackByFn(i: number, task: Task) {
