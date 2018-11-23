@@ -23,6 +23,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { TimeTrackingModule } from './time-tracking/time-tracking.module';
 import { BookmarkModule } from './bookmark/bookmark.module';
 import { NoteModule } from './note/note.module';
+import { SidebarModule } from 'ng-sidebar';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,7 @@ import { NoteModule } from './note/note.module';
     TasksModule,
     TimeTrackingModule,
     NoteModule,
-
+    SidebarModule.forRoot(),
     // External
     BrowserModule,
     BrowserAnimationsModule,

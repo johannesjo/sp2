@@ -44,6 +44,7 @@ mat-drawer {
   left: 0;
   top: 0;
   overflow: hidden;
+
   > ::ng-deep router-outlet + * {
     position: absolute;
     width: 100%;
@@ -52,4 +53,10 @@ mat-drawer {
     top: 0;
     overflow-y: scroll;
   }
+}
+
+.sidebar-content {
+  position: relative;
+  display: flex;
+  height: 100%;
 }

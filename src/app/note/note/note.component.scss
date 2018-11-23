@@ -1,6 +1,8 @@
 @import '../../../variables';
 
 .note {
+  min-width: $s*30;
+  max-height: 150px;
   background: #ffffff;
   color: $standard-note-fg-light;
   box-sizing: border-box;
@@ -9,6 +11,7 @@
   box-shadow: $shadow-bottom-boxed;
   transition: $transition-standard;
   transition-property: transform;
+  overflow: scroll;
 
   @include darkTheme {
     background: $standard-note-bg-dark;

@@ -5,17 +5,19 @@
               [@blendInOut]
               (blur)="layoutService.hideAddTaskBar()"
               *ngIf="layoutService.isShowAddTaskBar$|async"></add-task-bar>
-<mat-drawer-container>
-  <div class="route-wrapper"
-       [@warpRoute]="getPage(o)">
-    <router-outlet #o="outlet"></router-outlet>
-  </div>
-  <mat-drawer #drawer
-              (closedStart)="noteService.hide()"
-              [mode]="mobileQuery.matches ? 'over' : 'side'"
-              [opened]="noteService.isShowNotes$|async"
-              position="end">
+<ng-sidebar-container>
+  <ng-sidebar
+    [mode]="mobileQuery.matches ? 'push' : 'push'"
+    [opened]="noteService.isShowNotes$|async"
+    position="top">
     <notes></notes>
-  </mat-drawer>
-
-</mat-drawer-container>
+  </ng-sidebar>
+  <div ng-sidebar-content
+       class="sidebar-content">
+    <div class="route-wrapper"
+         [@warpRoute]="getPage(o)">
+      <router-outlet #o="outlet"></router-outlet>
+    </div>
+  </div>
+  <!--(closedStart)="noteService.hide()"-->
+</ng-sidebar-container>

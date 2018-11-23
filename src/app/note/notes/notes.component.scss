@@ -1,7 +1,7 @@
 @import '../../../variables';
 
 .wrapper {
-  width: $s*36;
+  //width: $s*36;
   display: block;
   text-align: center;
   min-height: 100%;
@@ -9,9 +9,12 @@
   padding-right: $s;
   box-sizing: border-box;
   overflow: hidden;
-
+  flex-wrap: nowrap; /* [1] */
+  overflow-x: auto; /* [1] */
+  -webkit-overflow-scrolling: touch; /* [4] */
+  -ms-overflow-style: -ms-autohiding-scrollbar;
   :host-context(.isLightTheme) & {
-    background: #eeeeee !important;
+    //background: #eeeeee !important;
   }
 
   header {
@@ -19,7 +22,14 @@
   }
 }
 
+.notes {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 note {
   display: block;
   margin-bottom: $s*1.5;
+  margin-right: $s*1.5;
 }
