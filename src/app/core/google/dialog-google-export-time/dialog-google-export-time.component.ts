@@ -5,9 +5,9 @@ import { GoogleApiService } from '../google-api.service';
 import { SnackService } from '../../snack/snack.service';
 import { MatDialogRef } from '@angular/material';
 import { ProjectService } from '../../../project/project.service';
-import { Subject } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { GoogleTimeSheetExportCopy, Project } from '../../../project/project.model';
-import { takeUntil } from 'rxjs/operators';
+import { catchError, take, takeUntil } from 'rxjs/operators';
 import { TaskService } from '../../../tasks/task.service';
 import { TaskWithSubTasks } from '../../../tasks/task.model';
 
@@ -47,8 +47,8 @@ export class DialogGoogleExportTimeComponent implements OnInit, OnDestroy {
   ];
 
   loginPromise: Promise<any>;
-  readPromise: Promise<any>;
-  savePromise: Promise<any>;
+  readSub: Subscription;
+  saveSub: Subscription;
 
   private _startedTimeToday: number;
   private _todaysTasks: TaskWithSubTasks[];
@@ -83,10 +83,7 @@ export class DialogGoogleExportTimeComponent implements OnInit, OnDestroy {
       this.login()
         .then(() => {
           if (this.opts.spreadsheetId) {
-            this.readSpreadsheet()
-              .then(() => {
-                this.isLoading = false;
-              });
+            this.readSpreadsheet();
           }
         })
         .then(() => {
@@ -114,17 +111,23 @@ export class DialogGoogleExportTimeComponent implements OnInit, OnDestroy {
     }).catch(this._handleError.bind(this));
   }
 
-  readSpreadsheet() {
+  readSpreadsheet(): Observable<any> {
     this.isLoading = true;
     this.headings = undefined;
-    this.readPromise = this.googleApiService.getSpreadsheetHeadingsAndLastRow(this.opts.spreadsheetId);
-    return this.readPromise.then((data: any) => {
+    const obs = this.googleApiService.getSpreadsheetHeadingsAndLastRow(this.opts.spreadsheetId)
+      .pipe(
+        takeUntil(this._destroy$),
+        take(1),
+        catchError(this._handleError.bind(this))
+      );
+    this.readSub = obs.subscribe((data) => {
       this.headings = data.headings;
       this.lastRow = data.lastRow;
       this.updateDefaults();
       this.isLoading = false;
       this._cd.detectChanges();
-    }).catch(this._handleError.bind(this));
+    });
+    return obs;
   }
 
   logout() {
@@ -156,17 +159,23 @@ export class DialogGoogleExportTimeComponent implements OnInit, OnDestroy {
       this._snackService.open('Current values and the last saved row have equal values, that is probably not what you want.');
     } else {
 
-      this.savePromise = this.googleApiService.appendRow(this.opts.spreadsheetId, this.actualValues);
-      this.savePromise.then(() => {
-        this._snackService.open({
-          message: 'Row successfully appended',
-          type: 'SUCCESS'
-        });
+      this.saveSub = this.googleApiService
+        .appendRow(this.opts.spreadsheetId, this.actualValues)
+        .pipe(
+          takeUntil(this._destroy$),
+          take(1),
+          catchError(this._handleError.bind(this))
+        )
+        .subscribe(() => {
+          this._snackService.open({
+            message: 'Row successfully appended',
+            type: 'SUCCESS'
+          });
 
-        this._matDialogRef.close();
-        this._projectService.updateTimeSheetExportSettings(this._projectId, this.opts, true);
-        this.isLoading = false;
-      }).catch(this._handleError.bind(this));
+          this._matDialogRef.close();
+          this._projectService.updateTimeSheetExportSettings(this._projectId, this.opts, true);
+          this.isLoading = false;
+        });
     }
   }
 

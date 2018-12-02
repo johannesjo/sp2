@@ -10,7 +10,7 @@ import { ConfigService } from '../config/config.service';
 import { GlobalConfig, GoogleSession } from '../config/config.model';
 import { catchError, map } from 'rxjs/operators';
 import { EmptyObservable } from 'rxjs-compat/observable/EmptyObservable';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { IPC_GOOGLE_AUTH_TOKEN, IPC_GOOGLE_AUTH_TOKEN_ERROR, IPC_TRIGGER_GOOGLE_AUTH } from '../../../ipc-events.const';
 import { ElectronService } from 'ngx-electron';
 
@@ -125,7 +125,26 @@ export class GoogleApiService {
   }
 
   // -----------------
-  appendRow(spreadsheetId, row) {
+  getSpreadsheetHeadingsAndLastRow(spreadsheetId): Observable<any> {
+    return this.getSpreadsheetData(spreadsheetId, 'A1:Z99')
+      .pipe(map((res) => {
+        console.log(res);
+
+        const range = res.body || res;
+
+        if (range && range.values && range.values[0]) {
+          return {
+            headings: range.values[0],
+            lastRow: range.values[range.values.length - 1],
+          };
+        } else {
+          this._handleError('No data found');
+          return throwError('No data found');
+        }
+      }));
+  }
+
+  appendRow(spreadsheetId, row): Observable<any> {
     // @see: https://developers.google.com/sheets/api/reference/rest/
     const range = 'A1:Z99';
     return this._mapHttp({
@@ -140,7 +159,7 @@ export class GoogleApiService {
     });
   }
 
-  getSpreadsheetData(spreadsheetId, range) {
+  getSpreadsheetData(spreadsheetId, range): Observable<any> {
     // @see: https://developers.google.com/sheets/api/reference/rest/
     return this._mapHttp({
       method: 'GET',
@@ -151,31 +170,10 @@ export class GoogleApiService {
     });
   }
 
-  getSpreadsheetHeadingsAndLastRow(spreadsheetId) {
-    return new Promise((resolve, reject) => {
-      this.getSpreadsheetData(spreadsheetId, 'A1:Z99')
-        .then((response: any) => {
-          console.log(response);
-
-          const range = response.body || response;
-
-          if (range && range.values && range.values[0]) {
-            resolve({
-              headings: range.values[0],
-              lastRow: range.values[range.values.length - 1],
-            });
-          } else {
-            reject('No data found');
-            this._handleError('No data found');
-          }
-        });
-    });
-  }
-
-  getFileInfo(fileId) {
+  getFileInfo(fileId): Observable<any> {
     if (!fileId) {
       this._snackIt('ERROR', 'GoogleApi: No file id specified');
-      return Promise.reject('No file id given');
+      return throwError('No file id given');
     }
 
     return this._mapHttp({
@@ -189,10 +187,10 @@ export class GoogleApiService {
     });
   }
 
-  findFile(fileName) {
+  findFile(fileName): Observable<any> {
     if (!fileName) {
       this._snackIt('ERROR', 'GoogleApi: No file name specified');
-      return Promise.reject('No file name given');
+      return throwError('No file name given');
     }
 
     return this._mapHttp({
@@ -206,10 +204,10 @@ export class GoogleApiService {
     });
   }
 
-  loadFile(fileId): Promise<any> {
+  loadFile(fileId): Observable<any> {
     if (!fileId) {
       this._snackIt('ERROR', 'GoogleApi: No file id specified');
-      return Promise.reject('No file id given');
+      return throwError('No file id given');
     }
 
     return this._mapHttp({
@@ -234,7 +232,7 @@ export class GoogleApiService {
     //   });
   }
 
-  saveFile(content, metadata: any = {}) {
+  saveFile(content, metadata: any = {}): Observable<any> {
     if ((typeof content !== 'string')) {
       content = JSON.stringify(content);
     }
@@ -371,17 +369,16 @@ export class GoogleApiService {
   }
 
   private _snackIt(snackType: SnackType, msg: string) {
-    console.log('SNACK', arguments);
     this._snackService.open({
       message: msg,
       type: snackType,
     });
   }
 
-  private _mapHttp(params_: HttpRequest<string> | any): Promise<any> {
+  private _mapHttp(params_: HttpRequest<string> | any): Observable<any> {
     if (!this._session.accessToken) {
       this._handleUnAuthenticated('GoogleApiService: Not logged in');
-      return Promise.reject('Not logged in');
+      return throwError('Not logged in');
     }
 
     const p = {
@@ -399,7 +396,7 @@ export class GoogleApiService {
     const req = new HttpRequest(p.method, p.url, ...allArgs);
 
     // const sub = this._http[p.method.toLowerCase()](p.url, p.data, p)
-    const sub = this._http.request(req)
+    return this._http.request(req)
       .pipe(catchError((res) => {
         console.log(res);
         if (!res) {
@@ -411,7 +408,6 @@ export class GoogleApiService {
         }
         return new EmptyObservable<Response>();
       }));
-    return sub.toPromise();
   }
 
 

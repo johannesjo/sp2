@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material';
 import { DialogConfirmComponent } from '../../ui/dialog-confirm/dialog-confirm.component';
 import { DialogConfirmDriveSyncLoadComponent } from './dialog-confirm-drive-sync-load/dialog-confirm-drive-sync-load.component';
 import { DialogConfirmDriveSyncSaveComponent } from './dialog-confirm-drive-sync-save/dialog-confirm-drive-sync-save.component';
+import { Observable } from 'rxjs';
 
 const MAX_REQUEST_DURATION = 15000;
 
@@ -79,8 +80,9 @@ export class GoogleDriveSyncService {
     }
   }
 
-  async changeSyncFileName(newSyncFileName): Promise<any> {
-    const res = await this._googleApiService.findFile(newSyncFileName);
+  changeSyncFileName(newSyncFileName): Observable<any> {
+    return this._googleApiService.findFile(newSyncFileName)
+    .pipe(switchMap())
     const filesFound = res.body.items;
     if (!filesFound || filesFound.length === 0) {
       const isSave = await this._confirmSaveNewFile(newSyncFileName);
@@ -111,17 +113,17 @@ export class GoogleDriveSyncService {
     }
   }
 
-  saveForSyncIfEnabled(): Promise<any> {
+  saveForSyncIfEnabled(force = false): Promise<any> {
     if (!this.config.isAutoSyncToRemote || !this.config.isEnabled) {
       return Promise.resolve();
     }
 
-    if (this._isSyncingInProgress) {
+    if (this._isSyncingInProgress && !force) {
       console.log('GoogleDriveSync', 'SYNC OMITTED because of promise');
       return Promise.resolve();
     } else {
       console.log('GoogleDriveSync', 'SYNC');
-      const promise = this.saveTo();
+      const promise = this.saveTo(true);
       if (this.config.isNotifyOnSync) {
         this._showAsyncToast(promise, 'Syncing to google drive');
       }
@@ -129,11 +131,15 @@ export class GoogleDriveSyncService {
     }
   }
 
-  async saveTo(): Promise<any> {
+  async saveTo(force = false): Promise<any> {
     // don't execute sync interactions at the same time
     if (this._isSyncingInProgress) {
-      console.log('GoogleDriveSync', 'saveTo omitted because is in progress');
-      return Promise.reject('Something in progress');
+      if (force) {
+
+      } else {
+        console.log('GoogleDriveSync', 'saveTo omitted because is in progress');
+        return Promise.reject('Something in progress');
+      }
     }
 
     const promise = new Promise((resolve, reject) => {

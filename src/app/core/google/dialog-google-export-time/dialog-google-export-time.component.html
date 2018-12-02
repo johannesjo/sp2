@@ -26,7 +26,7 @@
     <button mat-raised-button=""
             color="primary"
             type="button"
-            [promiseBtn]="readPromise"
+            [promiseBtn]="readSub"
             [disabled]="!opts.spreadsheetId"
             *ngIf="(googleApiService.isLoggedIn$|async)"
             (click)="readSpreadsheet()">
@@ -212,7 +212,7 @@
           type="button"
           mat-raised-button=""
           color="primary"
-          [promiseBtn]="savePromise">
+          [promiseBtn]="saveSub">
     <mat-icon>save</mat-icon>
     Save row
   </button>
