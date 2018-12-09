@@ -15,6 +15,7 @@ import { loadFromSessionStorage, saveToSessionStorage } from '../../core/persist
 import { combineLatest } from 'rxjs';
 
 const BLOCK_ACCESS_KEY = 'SUP_BLOCK_JIRA_ACCESS';
+const WORKER_PATH = 'assets/web-workers/jira.js';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,7 @@ export class JiraApiService {
   private _isExtension = false;
   private _isHasCheckedConnection = false;
   private _cfg: JiraCfg;
+  private _w: Worker;
 
   constructor(
     private _chromeExtensionInterface: ChromeExtensionInterfaceService,
@@ -32,6 +34,11 @@ export class JiraApiService {
     private _electronService: ElectronService,
     private _snackService: SnackService,
   ) {
+    this._w = new Worker(WORKER_PATH);
+    // this._w.onerror = this._handleError.bind(this);
+    this._w.addEventListener('message', this._handleResponse.bind(this));
+    // this._w.addEventListener('error', this._handleError.bind(this));
+
     this._projectService.currentJiraCfg$.subscribe((cfg: JiraCfg) => {
       this._cfg = cfg;
     });
@@ -226,6 +233,19 @@ export class JiraApiService {
       }, JIRA_REQUEST_TIMEOUT_DURATION)
     };
 
+    this._w.postMessage({
+      requestId: request.requestId,
+      apiMethod: request.apiMethod,
+      arguments: request.arguments,
+      config: {
+        host: request.config.host,
+        userName: request.config.userName,
+        password: request.config.password,
+        isJiraEnabled: request.config.isJiraEnabled,
+      }
+    });
+    return promise;
+
     // send to electron
     if (this._electronService.isElectronApp) {
       this._electronService.ipcRenderer.send(IPC_JIRA_MAKE_REQUEST_EVENT, request);
@@ -247,6 +267,10 @@ export class JiraApiService {
   }
 
   private _handleResponse(res) {
+    console.log('XXXXXXXXXXXXXXXXXXXXX');
+    console.log(res);
+    
+    
     // check if proper id is given in callback and if exists in requestLog
     if (res.requestId && this._requestsLog[res.requestId]) {
       const currentRequest = this._requestsLog[res.requestId];
